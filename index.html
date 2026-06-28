@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LASWELL — Premium Streetwear</title>
+  <meta name="description" content="LASWELL – Türkiye'nin en premium streetwear markası. Techwear, oversize ve minimal koleksiyonlar." />
+  <meta name="theme-color" content="#080808" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ── Page Loader ──────────────────────────────── -->
+  <div id="page-loader">
+    <div class="loader-logo">LAS<span>W</span>ELL</div>
+    <div class="loader-bar"></div>
+  </div>
+
+  <!-- ── Navbar ───────────────────────────────────── -->
+  <nav id="navbar">
+    <a href="#" class="nav-logo">LASWELL</a>
+
+    <div class="nav-search">
+      <div class="nav-search-inner">
+        <button id="search-btn" aria-label="Ara" style="background: none; border: none; padding: 0; color: inherit; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+        </button>
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Ürün ara..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="search-clear" aria-label="Aramayı temizle">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div id="search-suggestions" class="search-suggestions"></div>
+    </div>
+
+    <div class="nav-actions">
+      <a href="admin.html" class="nav-btn-label" id="admin-nav-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect width="3" height="18" x="3" y="3" rx="1"/><rect width="3" height="11" x="10.5" y="10" rx="1"/>
+          <rect width="3" height="14" x="18" y="7" rx="1"/>
+        </svg>
+        <span>Admin</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ── Hero ─────────────────────────────────────── -->
+  <section id="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">2026 Collection — Drop 01</p>
+      <h1 class="hero-title" id="hero-title">LASWELL</h1>
+      <p class="hero-subtitle">Premium Streetwear &nbsp;·&nbsp; Techwear &nbsp;·&nbsp; Minimal</p>
+      <a href="#products" class="hero-cta">
+        Koleksiyonu Keşfet
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </div>
+    <div class="hero-scroll-indicator">
+      <div class="scroll-line"></div>
+      <span>Kaydır</span>
+    </div>
+  </section>
+
+  <!-- ── Featured Scroll ───────────────────────────── -->
+  <section id="featured-section">
+    <div class="section-title reveal">
+      <h2>Öne Çıkanlar</h2>
+      <div class="section-title-line"></div>
+    </div>
+    <div class="featured-track-wrapper">
+      <div class="featured-track" id="featured-track">
+        <!-- populated by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Filter Bar ────────────────────────────────── -->
+  <div id="filter-bar">
+    <div class="filter-bar-inner">
+
+      <!-- Category -->
+      <div class="filter-section">
+        <span class="filter-label">Kategori</span>
+        <button class="filter-pill active" data-filter="category" data-value="Tümü">Tümü</button>
+        <button class="filter-pill" data-filter="category" data-value="Üst Giyim">Üst Giyim</button>
+        <button class="filter-pill" data-filter="category" data-value="Alt Giyim">Alt Giyim</button>
+        <button class="filter-pill" data-filter="category" data-value="Dış Giyim">Dış Giyim</button>
+        <button class="filter-pill" data-filter="category" data-value="Aksesuar">Aksesuar</button>
+      </div>
+
+      <!-- Size -->
+      <div class="filter-section">
+        <span class="filter-label">Beden</span>
+        <button class="filter-pill" data-filter="size" data-value="XS">XS</button>
+        <button class="filter-pill" data-filter="size" data-value="S">S</button>
+        <button class="filter-pill" data-filter="size" data-value="M">M</button>
+        <button class="filter-pill" data-filter="size" data-value="L">L</button>
+        <button class="filter-pill" data-filter="size" data-value="XL">XL</button>
+        <button class="filter-pill" data-filter="size" data-value="XXL">XXL</button>
+      </div>
+
+      <!-- Sort -->
+      <div class="filter-section">
+        <span class="filter-label">Sırala</span>
+        <select class="sort-select" id="sort-select">
+          <option value="newest">En Yeni</option>
+          <option value="price-asc">Fiyat (Artan)</option>
+          <option value="price-desc">Fiyat (Azalan)</option>
+          <option value="featured">Öne Çıkanlar</option>
+          <option value="discount">İndirimli</option>
+        </select>
+      </div>
+
+      <div class="filter-results-count">
+        <span id="results-count">0</span> ürün
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Products Grid ─────────────────────────────── -->
+  <section id="products">
+    <div id="products-grid">
+      <!-- populated by JS -->
+    </div>
+  </section>
+
+  <!-- ── Product Detail Modal ──────────────────────── -->
+  <div id="product-modal" role="dialog" aria-modal="true" aria-labelledby="modal-product-name">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-box">
+      <button class="modal-close" id="modal-close-btn" aria-label="Kapat">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+      </button>
+
+      <div class="modal-image">
+        <img id="modal-img" src="" alt="" />
+      </div>
+
+      <div class="modal-details">
+        <p class="modal-category" id="modal-category"></p>
+        <h2 class="modal-name" id="modal-product-name"></h2>
+
+        <div class="modal-price-row">
+          <span class="modal-price-current" id="modal-price"></span>
+          <span class="modal-price-original" id="modal-original-price"></span>
+          <span class="modal-price-save" id="modal-save"></span>
+        </div>
+
+        <div class="modal-divider"></div>
+        <p class="modal-desc" id="modal-desc"></p>
+        <div class="modal-divider"></div>
+
+        <!-- Size -->
+        <div id="modal-size-section">
+          <p class="modal-option-label">Beden: <span id="selected-size-label">—</span></p>
+          <div class="size-buttons" id="modal-sizes"></div>
+        </div>
+
+        <!-- Color -->
+        <div id="modal-color-section">
+          <p class="modal-option-label">Renk: <span id="selected-color-label">—</span></p>
+          <div class="color-buttons" id="modal-colors"></div>
+        </div>
+
+        <div class="modal-add-btn" style="margin-top: auto;">
+          <a href="https://www.shopier.com/s/notfound/1041" target="_blank" rel="noopener noreferrer" class="btn-primary" id="modal-buy-now" style="width:100%; justify-content:center; padding:14px 22px; text-align:center; display:flex; align-items:center; gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>
+            </svg>
+            Satın Al
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toast Container ───────────────────────────── -->
+  <div id="toast-container"></div>
+
+  <!-- ── Footer ───────────────────────────────────── -->
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand-name">LAS<span>W</span>ELL</div>
+        <p class="footer-brand-desc">
+          Premium streetwear ve techwear koleksiyonları ile modern giyimin sınırlarını yeniden tanımlıyoruz.
+          Her ürün, detaylara verilen özenin bir yansıması.
+        </p>
+        <div class="footer-socials">
+          <a href="#" class="social-link" aria-label="Instagram">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect width="20" height="20" x="2" y="2" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+          </a>
+          <a href="#" class="social-link" aria-label="Twitter/X">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4l16 16M4 20L20 4"/>
+            </svg>
+          </a>
+          <a href="#" class="social-link" aria-label="TikTok">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.87a8.18 8.18 0 0 0 4.78 1.52V6.93a4.85 4.85 0 0 1-1.01-.24z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Koleksiyon</h4>
+        <ul>
+          <li><a href="#">Üst Giyim</a></li>
+          <li><a href="#">Alt Giyim</a></li>
+          <li><a href="#">Dış Giyim</a></li>
+          <li><a href="#">Aksesuar</a></li>
+          <li><a href="#">Öne Çıkanlar</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Bilgi</h4>
+        <ul>
+          <li><a href="#">Hakkımızda</a></li>
+          <li><a href="#">Beden Rehberi</a></li>
+          <li><a href="#">Kargo & İade</a></li>
+          <li><a href="#">Bakım Rehberi</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>İletişim</h4>
+        <ul>
+          <li><a href="#">info@laswell.com</a></li>
+          <li><a href="#">+90 XXX XXX XX XX</a></li>
+          <li><a href="#">Instagram DM</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2024 LASWELL. Tüm hakları saklıdır.</span>
+      <span>Gizlilik Politikası · Kullanım Şartları</span>
+    </div>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

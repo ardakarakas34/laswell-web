@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — LASWELL</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+
+  <!-- ── Login Screen ─────────────────────────────── -->
+  <div id="login-screen">
+    <div class="login-grid"></div>
+    <div class="login-box">
+      <div class="login-logo">LAS<span>W</span>ELL</div>
+      <div class="login-subtitle">Admin Paneli</div>
+      <div class="login-divider"></div>
+      <form class="login-form" id="login-form" autocomplete="off">
+        <div class="form-group">
+          <label for="admin-password">Şifre</label>
+          <input
+            type="password"
+            id="admin-password"
+            placeholder="Admin şifresini girin"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+        <div class="login-error" id="login-error">Hatalı şifre. Tekrar deneyin.</div>
+        <button type="submit" class="btn-login">Giriş Yap</button>
+      </form>
+      <p style="text-align:center;margin-top:20px;font-size:0.75rem;color:var(--text-3);">
+        <a href="index.html" style="color:var(--accent);">← Mağazaya Dön</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Admin Panel ────────────────────────────────── -->
+  <div id="admin-panel">
+
+    <!-- Sidebar -->
+    <aside id="admin-sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-name">LAS<span>W</span>ELL</div>
+        <div class="sidebar-brand-tag">Admin Paneli</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group-label">Yönetim</div>
+
+        <a class="sidebar-link active" data-panel="dashboard" id="nav-dashboard">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/>
+            <rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>
+          </svg>
+          Dashboard
+        </a>
+
+        <a class="sidebar-link" data-panel="products" id="nav-products">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+          Ürünler
+          <span class="badge" id="sidebar-product-count">0</span>
+        </a>
+
+        <a class="sidebar-link" data-panel="add-product" id="nav-add-product">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>
+          </svg>
+          Ürün Ekle
+        </a>
+
+        <div class="nav-group-label" style="margin-top:8px;">Araçlar</div>
+
+        <a class="sidebar-link" data-panel="data" id="nav-data">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+          </svg>
+          Veri Yönetimi
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="index.html" class="sidebar-footer-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          Mağazayı Gör
+        </a>
+        <a class="sidebar-footer-link danger" id="logout-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Çıkış Yap
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main id="admin-main">
+
+      <!-- Topbar -->
+      <div id="admin-topbar">
+        <button id="sidebar-toggle" style="display:none;padding:6px;color:var(--text-2);border-radius:6px;transition:background 0.2s;" aria-label="Menü">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-actions">
+          <button class="btn btn-gold btn-sm" id="topbar-add-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Ürün Ekle
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-content">
+
+        <!-- ── Dashboard Panel ───────────────────── -->
+        <div class="admin-panel active" id="panel-dashboard">
+          <div class="stats-grid">
+            <div class="stat-card" id="stat-card-total" style="cursor: pointer;">
+              <div class="stat-label">Toplam Ürün</div>
+              <div class="stat-value" id="stat-total">0</div>
+              <div class="stat-sub">Tüm kategoriler</div>
+            </div>
+            <div class="stat-card" id="stat-card-featured" style="cursor: pointer;">
+              <div class="stat-label">Öne Çıkan</div>
+              <div class="stat-value" id="stat-featured"><span>0</span></div>
+              <div class="stat-sub">Öne çıkan vitrin ürünleri</div>
+            </div>
+            <div class="stat-card" id="stat-card-discount" style="cursor: pointer;">
+              <div class="stat-label">İndirimli</div>
+              <div class="stat-value" id="stat-discount"><span>0</span></div>
+              <div class="stat-sub">Kampanyalı indirimler</div>
+            </div>
+            <div class="stat-card" id="stat-card-total-val" style="cursor: pointer;">
+              <div class="stat-label">Toplam Değer</div>
+              <div class="stat-value" id="stat-total-val">₺0</div>
+              <div class="stat-sub">Toplam envanter değeri</div>
+            </div>
+            <div class="stat-card" id="stat-card-expensive" style="cursor: pointer;">
+              <div class="stat-label">En Değerli Ürün</div>
+              <div class="stat-value" id="stat-expensive-val" style="font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-top: 6px;">—</div>
+              <div class="stat-sub" id="stat-expensive-sub">En yüksek fiyatlı</div>
+            </div>
+            <div class="stat-card" id="stat-card-cats" style="cursor: pointer;">
+              <div class="stat-label">Kategoriler</div>
+              <div class="stat-value" id="stat-cats">0</div>
+              <div class="stat-sub">Aktif ürün kategorisi</div>
+            </div>
+          </div>
+
+          <!-- Recent Products -->
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h3>Son Eklenen Ürünler</h3>
+              <button class="btn btn-outline btn-sm" data-panel="products">Tümünü Gör</button>
+            </div>
+            <div class="panel-card-body">
+              <table class="product-table">
+                <thead>
+                  <tr>
+                    <th>Ürün</th>
+                    <th>Kategori</th>
+                    <th>Fiyat</th>
+                    <th>Durum</th>
+                    <th>İşlem</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-recent-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Products Panel ────────────────────── -->
+        <div class="admin-panel" id="panel-products">
+          <div class="admin-search-row">
+            <div class="admin-search">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              <input type="text" id="admin-search-input" placeholder="Ürün adı veya kategori ara..." />
+            </div>
+            <select class="filter-select" id="admin-cat-filter">
+              <option value="">Tüm Kategoriler</option>
+              <option>Üst Giyim</option>
+              <option>Alt Giyim</option>
+              <option>Dış Giyim</option>
+              <option>Aksesuar</option>
+            </select>
+            <select class="filter-select" id="admin-type-filter">
+              <option value="all">Tüm Durumlar</option>
+              <option value="featured">Öne Çıkanlar</option>
+              <option value="discount">İndirimdekiler</option>
+              <option value="expensive">En Pahalı Ürün</option>
+            </select>
+            <button class="btn btn-gold" id="admin-add-product-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              Yeni Ürün
+            </button>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h3>Ürün Listesi</h3>
+              <span style="font-size:0.78rem;color:var(--text-3)" id="product-list-count"></span>
+            </div>
+            <div class="panel-card-body">
+              <table class="product-table" id="products-table">
+                <thead>
+                  <tr>
+                    <th style="width:56px;">Görsel</th>
+                    <th>Ürün</th>
+                    <th>Kategori</th>
+                    <th>Fiyat</th>
+                    <th>Bedenler</th>
+                    <th>Durum</th>
+                    <th>Tarih</th>
+                    <th style="width:140px;">İşlem</th>
+                  </tr>
+                </thead>
+                <tbody id="products-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Add / Edit Product Panel ──────────── -->
+        <div class="admin-panel" id="panel-add-product">
+          <div class="panel-card" id="product-form-panel">
+            <div class="panel-card-header">
+              <h3 id="form-panel-title">Yeni Ürün Ekle</h3>
+              <button class="btn btn-outline btn-sm" id="form-cancel-btn">İptal</button>
+            </div>
+
+            <form id="product-form">
+              <input type="hidden" id="edit-product-id" />
+
+              <div class="form-grid">
+                <!-- Name -->
+                <div class="field form-full">
+                  <label for="f-name">Ürün Adı <span>*</span></label>
+                  <input type="text" id="f-name" placeholder="Örn: Shadow Oversize Hoodie" required />
+                </div>
+
+                <!-- Description -->
+                <div class="field form-full">
+                  <label for="f-desc">Açıklama <span>*</span></label>
+                  <textarea id="f-desc" rows="3" placeholder="Ürün hakkında detaylı açıklama..." required></textarea>
+                </div>
+
+                <!-- Category -->
+                <div class="field">
+                  <label for="f-cat">Kategori <span>*</span></label>
+                  <select id="f-cat" required>
+                    <option value="">Seçin...</option>
+                    <option>Üst Giyim</option>
+                    <option>Alt Giyim</option>
+                    <option>Dış Giyim</option>
+                    <option>Aksesuar</option>
+                  </select>
+                </div>
+
+                <!-- Price -->
+                <div class="field">
+                  <label for="f-price">Fiyat (₺) <span>*</span></label>
+                  <input type="number" id="f-price" placeholder="0" min="0" required />
+                </div>
+
+                <!-- Discount Price -->
+                <div class="field">
+                  <label for="f-disc">İndirimli Fiyat (₺)</label>
+                  <input type="number" id="f-disc" placeholder="Boş bırakın = indirim yok" min="0" />
+                  <span class="field-hint">Normal fiyattan düşük olmalı</span>
+                </div>
+
+                <!-- Sizes -->
+                <div class="field">
+                  <label>Bedenler <span>*</span></label>
+                  <div class="chip-select" id="sizes-chips">
+                    <span class="chip" data-size="XS">XS</span>
+                    <span class="chip" data-size="S">S</span>
+                    <span class="chip" data-size="M">M</span>
+                    <span class="chip" data-size="L">L</span>
+                    <span class="chip" data-size="XL">XL</span>
+                    <span class="chip" data-size="XXL">XXL</span>
+                    <span class="chip" data-size="Tek Ebat">Tek Ebat</span>
+                  </div>
+                </div>
+
+                <!-- Colors -->
+                <div class="field">
+                  <label>Renkler</label>
+                  <div class="chip-select" id="colors-chips">
+                    <span class="chip" data-color="Siyah">Siyah</span>
+                    <span class="chip" data-color="Beyaz">Beyaz</span>
+                    <span class="chip" data-color="Gri">Gri</span>
+                    <span class="chip" data-color="Antrasit">Antrasit</span>
+                    <span class="chip" data-color="Haki">Haki</span>
+                    <span class="chip" data-color="Koyu Yeşil">K. Yeşil</span>
+                    <span class="chip" data-color="Bej">Bej</span>
+                    <span class="chip" data-color="Mavi">Mavi</span>
+                  </div>
+                  <div style="display:flex;gap:8px;margin-top:8px;">
+                    <input type="text" id="f-custom-color" placeholder="Özel renk ekle" style="flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text-1);font-size:0.85rem;outline:none;" />
+                    <button type="button" class="btn btn-outline btn-sm" id="add-custom-color-btn">Ekle</button>
+                  </div>
+                </div>
+
+                <!-- Image -->
+                <div class="field form-full">
+                  <label>Ürün Görseli</label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+                    <div>
+                      <div style="margin-bottom:8px;">
+                        <input type="text" id="f-image-url" placeholder="Görsel URL'si (https://...)" style="width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:10px 14px;color:var(--text-1);font-size:0.88rem;outline:none;transition:border-color 0.2s;" />
+                      </div>
+                      <div style="text-align:center;font-size:0.75rem;color:var(--text-3);margin-bottom:8px;">— veya —</div>
+                      <div class="img-upload-area" id="img-upload-area">
+                        <div class="img-upload-icon">📷</div>
+                        <div class="img-upload-text">Dosya yüklemek için tıklayın</div>
+                        <input type="file" id="f-image-file" accept="image/*" style="display:none;" />
+                      </div>
+                    </div>
+                    <div>
+                      <img id="img-preview" class="img-preview" src="" alt="Önizleme" />
+                      <div id="img-preview-placeholder" style="background:var(--surface-2);border:1px dashed var(--border);border-radius:6px;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:0.82rem;">
+                        Önizleme
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Featured Toggle -->
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <h4>Öne Çıkan Ürün</h4>
+                  <p>Ana sayfada öne çıkan şeritte göster</p>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="f-featured" />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn btn-outline" id="form-reset-btn">Temizle</button>
+                <button type="submit" class="btn btn-gold" id="form-submit-btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                  Ürünü Kaydet
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- ── Data Management Panel ─────────────── -->
+        <div class="admin-panel" id="panel-data">
+          <div class="data-section">
+            <div class="data-card">
+              <h3>Veriyi Dışa Aktar</h3>
+              <p>Tüm ürünleri JSON formatında dışa aktarın. Yedek almak için kullanabilirsiniz.</p>
+              <button class="btn btn-gold" id="export-btn" style="margin-bottom:12px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                JSON Dışa Aktar
+              </button>
+              <textarea class="data-textarea" id="export-textarea" readonly placeholder="Dışa aktar butonuna tıklayın..."></textarea>
+            </div>
+
+            <div class="data-card">
+              <h3>Veriyi İçe Aktar</h3>
+              <p>Daha önce dışa aktarılan JSON verisini içe aktarın. <strong style="color:var(--error);">Mevcut veriler silinir!</strong></p>
+              <div style="display:flex;gap:8px;margin-bottom:12px;">
+                <button class="btn btn-outline" id="import-btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  İçe Aktar
+                </button>
+                <button class="btn btn-danger" id="clear-all-btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                  </svg>
+                  Tüm Verileri Sil
+                </button>
+              </div>
+              <textarea class="data-textarea" id="import-textarea" placeholder='JSON yapıştırın: [{"name":"...","price":...}]'></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /admin-content -->
+    </main>
+  </div><!-- /admin-panel -->
+
+  <!-- ── Confirm Modal ────────────────────────────── -->
+  <div id="confirm-modal">
+    <div class="confirm-backdrop"></div>
+    <div class="confirm-box">
+      <div class="confirm-icon" id="confirm-icon">⚠️</div>
+      <div class="confirm-title" id="confirm-title">Emin misiniz?</div>
+      <div class="confirm-msg" id="confirm-msg">Bu işlem geri alınamaz.</div>
+      <div class="confirm-actions">
+        <button class="btn btn-outline" id="confirm-cancel">İptal</button>
+        <button class="btn btn-danger" id="confirm-ok">Evet, Sil</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Admin Toast ───────────────────────────────── -->
+  <div id="admin-toast-container"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
