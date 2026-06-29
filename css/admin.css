@@ -163,51 +163,6 @@ input, select, textarea { font-family: inherit; }
 }
 .btn-login:hover { background: var(--accent-light); transform: translateY(-1px); }
 .btn-login:active { transform: translateY(0); }
-.btn-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-.btn-login-outline {
-  width: 100%;
-  padding: 11px;
-  background: transparent;
-  color: var(--text-2);
-  font-family: var(--font-h);
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  border-radius: var(--r);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition: color var(--t), border-color var(--t), background var(--t);
-}
-.btn-login-outline:hover { color: var(--text-1); border-color: var(--border-light); background: var(--surface-2); }
-.btn-resend {
-  width: 100%;
-  padding: 8px;
-  background: none;
-  border: none;
-  color: var(--accent);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  transition: color var(--t);
-}
-.btn-resend:hover { color: var(--accent-light); }
-.btn-resend:disabled { opacity: 0.5; cursor: not-allowed; }
-.otp-info {
-  font-size: 0.82rem;
-  color: var(--text-2);
-  text-align: center;
-  line-height: 1.5;
-  margin-bottom: 4px;
-}
-#admin-otp {
-  text-align: center;
-  font-size: 1.4rem;
-  letter-spacing: 0.35em;
-  font-weight: 700;
-  font-family: var(--font-h);
-}
 
 /* Sidebar overlay (mobile) */
 #sidebar-overlay {

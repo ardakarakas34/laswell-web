@@ -17,7 +17,6 @@ const adminState = {
   adminCatFilter: '',
   adminTypeFilter: 'all',
   confirmCallback: null,
-  pendingPassword: null,
 };
 
 // ── Init ──────────────────────────────────────────────────────
@@ -37,159 +36,17 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── Auth ──────────────────────────────────────────────────────
-function maskEmail(email) {
-  const [user, domain] = email.split('@');
-  if (!domain) return email;
-  const visible = user.slice(0, Math.min(2, user.length));
-  return `${visible}***@${domain}`;
-}
-
-function isEmailConfigured() {
-  const cfg = typeof LASWELL_CONFIG !== 'undefined' ? LASWELL_CONFIG : {};
-  const ej  = cfg.emailjs || {};
-  return cfg.adminEmail &&
-    ej.publicKey && ej.publicKey !== 'YOUR_PUBLIC_KEY' &&
-    ej.serviceId && ej.serviceId !== 'YOUR_SERVICE_ID' &&
-    ej.templateId && ej.templateId !== 'YOUR_TEMPLATE_ID';
-}
-
-async function sendOTPEmail(code) {
-  const cfg = LASWELL_CONFIG;
-  if (typeof emailjs === 'undefined') {
-    throw new Error('E-posta servisi yüklenemedi.');
-  }
-  emailjs.init(cfg.emailjs.publicKey);
-  await emailjs.send(cfg.emailjs.serviceId, cfg.emailjs.templateId, {
-    to_email:   cfg.adminEmail,
-    passcode:   code,
-    otp_code:   code,
-    message:    `LASWELL Admin giriş onay kodunuz: ${code}. Bu kod ${cfg.otpExpiryMinutes} dakika geçerlidir.`,
-    reply_to:   cfg.adminEmail,
-  });
-}
-
-function setLoginLoading(btn, loading, label) {
-  if (!btn) return;
-  btn.disabled = loading;
-  btn.dataset.originalText = btn.dataset.originalText || btn.textContent;
-  btn.textContent = loading ? label : btn.dataset.originalText;
-}
-
-function showLoginError(el, msg) {
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 4000);
-}
-
-function showOtpStep() {
-  $('#login-form').style.display = 'none';
-  $('#otp-form').style.display   = 'flex';
-  const email = LASWELL_CONFIG?.adminEmail || 'e-posta adresinize';
-  $('#otp-info').textContent = `${maskEmail(email)} adresine 6 haneli onay kodu gönderildi.`;
-  $('#admin-otp').value = '';
-  $('#otp-error').classList.remove('show');
-  setTimeout(() => $('#admin-otp').focus(), 100);
-}
-
-function showPasswordStep() {
-  $('#otp-form').style.display   = 'none';
-  $('#login-form').style.display = 'flex';
-  LaswellDB.clearOTP();
-  adminState.pendingPassword = null;
-  $('#admin-password').value = '';
-}
-
-async function requestOTP(password) {
-  if (!isEmailConfigured()) {
-    showLoginError($('#login-error'),
-      'E-posta ayarları yapılandırılmamış. js/config.js dosyasını düzenleyin.');
-    return;
-  }
-
-  const btn = $('#login-submit-btn');
-  setLoginLoading(btn, true, 'Gönderiliyor...');
-
-  try {
-    const code = LaswellDB.generateOTP();
-    LaswellDB.storeOTP(code);
-    await sendOTPEmail(code);
-    adminState.pendingPassword = password;
-    showOtpStep();
-    showAdminToast('Onay kodu e-postanıza gönderildi.', 'success');
-  } catch (err) {
-    LaswellDB.clearOTP();
-    showLoginError($('#login-error'),
-      'E-posta gönderilemedi. EmailJS ayarlarınızı kontrol edin.');
-    console.error('OTP email error:', err);
-  } finally {
-    setLoginLoading(btn, false);
-  }
-}
-
 function bindLoginEvents() {
-  $('#login-form').addEventListener('submit', async (e) => {
+  $('#login-form').addEventListener('submit', (e) => {
     e.preventDefault();
-    const pw  = $('#admin-password').value;
-    const err = $('#login-error');
-    err.classList.remove('show');
-
-    if (!LaswellDB.checkPassword(pw)) {
-      showLoginError(err, 'Hatalı şifre. Tekrar deneyin.');
-      $('#admin-password').value = '';
-      return;
-    }
-
-    await requestOTP(pw);
-  });
-
-  $('#otp-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const code = $('#admin-otp').value.trim();
-    const err  = $('#otp-error');
-    err.classList.remove('show');
-
-    const result = LaswellDB.verifyOTP(code);
-    if (result.ok) {
+    const pw = $('#admin-password').value;
+    if (LaswellDB.login(pw)) {
       showPanel();
-      return;
-    }
-
-    const messages = {
-      expired: 'Onay kodunun süresi doldu. Yeni kod isteyin.',
-      locked:  'Çok fazla hatalı deneme. Yeni kod isteyin.',
-      invalid: `Geçersiz kod.${result.remaining != null ? ` ${result.remaining} deneme hakkınız kaldı.` : ''}`,
-    };
-    showLoginError(err, messages[result.reason] || 'Geçersiz onay kodu.');
-    if (result.reason === 'expired' || result.reason === 'locked') {
-      setTimeout(showPasswordStep, 2000);
     } else {
-      $('#admin-otp').value = '';
-      $('#admin-otp').focus();
-    }
-  });
-
-  $('#otp-back-btn').addEventListener('click', showPasswordStep);
-
-  $('#otp-resend-btn').addEventListener('click', async () => {
-    if (!adminState.pendingPassword) {
-      showPasswordStep();
-      return;
-    }
-    const btn = $('#otp-resend-btn');
-    btn.disabled = true;
-    btn.textContent = 'Gönderiliyor...';
-    try {
-      const code = LaswellDB.generateOTP();
-      LaswellDB.storeOTP(code);
-      await sendOTPEmail(code);
-      showAdminToast('Yeni onay kodu gönderildi.', 'success');
-      $('#admin-otp').value = '';
-      $('#admin-otp').focus();
-    } catch {
-      showLoginError($('#otp-error'), 'Kod gönderilemedi. Tekrar deneyin.');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Kodu Tekrar Gönder';
+      const err = $('#login-error');
+      err.classList.add('show');
+      setTimeout(() => err.classList.remove('show'), 3000);
+      $('#admin-password').value = '';
     }
   });
 
