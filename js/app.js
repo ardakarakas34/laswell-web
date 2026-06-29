@@ -87,14 +87,9 @@ function initScrollObserver() {
 function applyFilters() {
   let result = [...state.products];
 
-  // Search
+  // Search — kelime/harf bazlı, Türkçe karakter duyarsız
   if (state.searchQuery) {
-    const q = state.searchQuery.toLowerCase();
-    result   = result.filter(p =>
-      p.name.toLowerCase().includes(q) ||
-      p.description?.toLowerCase().includes(q) ||
-      p.category?.toLowerCase().includes(q)
-    );
+    result = result.filter(p => productMatchesQuery(p, state.searchQuery));
   }
 
   // Category
@@ -128,6 +123,24 @@ function applyFilters() {
 
 function effectivePrice(p) {
   return p.discountPrice ?? p.price;
+}
+
+// ── Arama Yardımcıları ────────────────────────────────────────
+// Türkçe karakterleri ve aksanları sadeleştirir (tişört → tisort)
+function normalizeText(str) {
+  return (str || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/ı/g, 'i');
+}
+
+// Yazılan her kelime/harf grubunun ürünle eşleşmesini arar (AND mantığı)
+function productMatchesQuery(p, query) {
+  const tokens = normalizeText(query).split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return true;
+  const haystack = normalizeText(`${p.name} ${p.category || ''} ${p.description || ''}`);
+  return tokens.every(t => haystack.includes(t));
 }
 
 // ── Render Products ───────────────────────────────────────────
@@ -325,11 +338,9 @@ function updateSuggestions(query) {
     return;
   }
 
-  const q = trimmed.toLowerCase();
-  const matches = state.products.filter(p =>
-    p.name.toLowerCase().includes(q) ||
-    p.category?.toLowerCase().includes(q)
-  ).slice(0, 5);
+  const matches = state.products
+    .filter(p => productMatchesQuery(p, trimmed))
+    .slice(0, 5);
 
   if (matches.length === 0) {
     suggestionsEl.innerHTML = '<div class="suggestion-empty">Eşleşen ürün bulunamadı.</div>';
