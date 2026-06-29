@@ -468,6 +468,20 @@ function bindEvents() {
     });
   });
 
+  // Footer koleksiyon linkleri — kategoriye göre filtrele
+  $$('.footer-cat-link').forEach(link => {
+    link.addEventListener('click', () => {
+      const value = link.dataset.category;
+      const pill  = document.querySelector(`[data-filter="category"][data-value="${value}"]`);
+      if (pill) {
+        pill.click();
+      } else {
+        state.activeCategory = value;
+        applyFilters();
+      }
+    });
+  });
+
   // Sort
   sortSelect.addEventListener('change', () => {
     state.sortBy = sortSelect.value;
