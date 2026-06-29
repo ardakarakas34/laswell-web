@@ -33,7 +33,6 @@ const featuredScroll = $('#featured-scroll');
 const heroTitle      = $('#hero-title');
 const productModal   = $('#product-modal');
 const modalScrollBox = $('#modal-scroll-box');
-const modalImageWrap = () => $('.modal-image');
 const toastContainer = $('#toast-container');
 
 // ── Init ──────────────────────────────────────────────────────
@@ -45,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
   applyFilters();
   renderFeatured();
   bindFeaturedCarousel();
-  bindModalScrollSync();
   bindEvents();
   initScrollObserver();
   initNavbarScroll();
@@ -227,18 +225,19 @@ function createProductCard(product, idx) {
 }
 
 // ── Featured Strip ────────────────────────────────────────────
-function isMobileView() {
-  return window.matchMedia('(max-width: 768px)').matches;
-}
+const featuredAuto = { rafId: null, pauseUntil: 0, autoScrolling: false, speed: 0.55 };
 
 function renderFeatured() {
   const featured = state.products.filter(p => p.featured);
-  if (featured.length === 0) { $('#featured-section').style.display = 'none'; return; }
+  if (featured.length === 0) {
+    $('#featured-section').style.display = 'none';
+    stopFeaturedAuto();
+    return;
+  }
+  $('#featured-section').style.display = '';
 
-  const manual = isMobileView();
-  const items  = manual ? featured : [...featured, ...featured];
+  const items = featured.length > 1 ? [...featured, ...featured] : featured;
 
-  featuredTrack.classList.toggle('auto-scroll', !manual);
   featuredTrack.innerHTML = items.map(p => {
     const price = effectivePrice(p);
     return `
@@ -259,6 +258,35 @@ function renderFeatured() {
   });
 
   if (featuredScroll) featuredScroll.scrollLeft = 0;
+  startFeaturedAuto();
+}
+
+function featuredAutoTick() {
+  featuredAuto.rafId = requestAnimationFrame(featuredAutoTick);
+  if (!featuredScroll || Date.now() < featuredAuto.pauseUntil) return;
+
+  const half = featuredScroll.scrollWidth / 2;
+  if (half <= featuredScroll.clientWidth + 4) return;
+
+  featuredAuto.autoScrolling = true;
+  let next = featuredScroll.scrollLeft + featuredAuto.speed;
+  if (next >= half) next -= half;
+  featuredScroll.scrollLeft = next;
+  featuredAuto.autoScrolling = false;
+}
+
+function pauseFeaturedAuto(ms = 5000) {
+  featuredAuto.pauseUntil = Date.now() + ms;
+}
+
+function startFeaturedAuto() {
+  stopFeaturedAuto();
+  featuredAuto.rafId = requestAnimationFrame(featuredAutoTick);
+}
+
+function stopFeaturedAuto() {
+  if (featuredAuto.rafId) cancelAnimationFrame(featuredAuto.rafId);
+  featuredAuto.rafId = null;
 }
 
 function bindFeaturedCarousel() {
@@ -269,58 +297,30 @@ function bindFeaturedCarousel() {
   const scrollByCard = (dir) => {
     const card = featuredTrack.querySelector('.featured-card');
     if (!card) return;
-    const gap   = parseFloat(getComputedStyle(featuredTrack).gap) || 12;
-    const step  = card.offsetWidth + gap;
-    featuredScroll.scrollBy({ left: dir * step, behavior: 'smooth' });
+    const gap  = parseFloat(getComputedStyle(featuredTrack).gap) || 12;
+    featuredScroll.scrollBy({ left: dir * (card.offsetWidth + gap), behavior: 'smooth' });
   };
 
-  prev.addEventListener('click', () => scrollByCard(-1));
-  next.addEventListener('click', () => scrollByCard(1));
+  prev.addEventListener('click', () => { pauseFeaturedAuto(); scrollByCard(-1); });
+  next.addEventListener('click', () => { pauseFeaturedAuto(); scrollByCard(1); });
+
+  featuredScroll.addEventListener('touchstart', () => pauseFeaturedAuto(6000), { passive: true });
+  featuredScroll.addEventListener('pointerdown', () => pauseFeaturedAuto(6000), { passive: true });
+  featuredScroll.addEventListener('scroll', () => {
+    if (!featuredAuto.autoScrolling) pauseFeaturedAuto(5000);
+  }, { passive: true });
 
   let resizeTimer;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(renderFeatured, 200);
   });
-}
 
-// ── Modal scroll sync (mobil) ─────────────────────────────────
-const MODAL_IMG_MIN_H = 72;
-
-function getModalImgStartH() {
-  return Math.min(window.innerHeight * 0.52, 420);
-}
-
-function syncModalImageScroll() {
-  if (!isMobileView() || !productModal.classList.contains('open')) return;
-  const box     = modalScrollBox;
-  const imgWrap = modalImageWrap();
-  if (!box || !imgWrap) return;
-
-  const startH   = getModalImgStartH();
-  const collapse = Math.max(160, startH - MODAL_IMG_MIN_H);
-  const progress = Math.min(1, box.scrollTop / collapse);
-  const height   = startH - (startH - MODAL_IMG_MIN_H) * progress;
-
-  imgWrap.style.height = `${height}px`;
-  imgWrap.style.setProperty('--modal-img-scale', (1 - progress * 0.1).toFixed(3));
-  imgWrap.style.setProperty('--modal-img-opacity', (1 - progress * 0.2).toFixed(3));
+  startFeaturedAuto();
 }
 
 function resetModalScroll() {
-  const box     = modalScrollBox;
-  const imgWrap = modalImageWrap();
-  if (box) box.scrollTop = 0;
-  if (imgWrap) {
-    imgWrap.style.height = '';
-    imgWrap.style.removeProperty('--modal-img-scale');
-    imgWrap.style.removeProperty('--modal-img-opacity');
-  }
-}
-
-function bindModalScrollSync() {
-  if (!modalScrollBox) return;
-  modalScrollBox.addEventListener('scroll', syncModalImageScroll, { passive: true });
+  if (modalScrollBox) modalScrollBox.scrollTop = 0;
 }
 
 // ── Product Modal ─────────────────────────────────────────────
@@ -379,13 +379,6 @@ function openModal(productId) {
   productModal.classList.add('open');
   document.body.classList.add('modal-open');
   document.body.style.overflow = 'hidden';
-
-  if (isMobileView()) {
-    requestAnimationFrame(() => {
-      const imgWrap = modalImageWrap();
-      if (imgWrap) imgWrap.style.height = `${getModalImgStartH()}px`;
-    });
-  }
 }
 
 function closeModal() {

@@ -909,13 +909,6 @@ body.modal-open .search-suggestions { z-index: 2600; }
   width: max-content;
   padding: 0 48px;
 }
-.featured-track.auto-scroll {
-  gap: 2px;
-  padding: 0;
-  animation: trackScroll 30s linear infinite;
-}
-.featured-track.auto-scroll:hover { animation-play-state: paused; }
-@keyframes trackScroll { from{ transform:translateX(0) } to{ transform:translateX(-50%) } }
 
 .featured-nav {
   position: absolute;
@@ -972,10 +965,15 @@ body.modal-open .search-suggestions { z-index: 2600; }
 }
 .featured-card-price { font-size: 0.9rem; color: var(--accent); font-weight: 700; }
 
+.featured-carousel:hover .featured-nav { opacity: 1; pointer-events: auto; }
+
 @media (min-width: 769px) {
-  .featured-scroll { overflow: hidden; }
-  .featured-nav { display: none; }
-  .featured-track:not(.auto-scroll) { padding: 0 16px; }
+  .featured-nav {
+    display: flex;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s var(--ease);
+  }
 }
 
 @media (max-width: 1024px) and (min-width: 769px) {
@@ -1195,14 +1193,13 @@ footer {
 }
 
 @media (max-width: 768px) {
-  /* Öne çıkanlar: manuel kaydırma */
+  /* Öne çıkanlar: otomatik + manuel */
   .featured-scroll { overflow-x: auto; }
   .featured-track { padding: 0 52px; gap: 10px; }
-  .featured-track.auto-scroll { animation: none; }
   .featured-card { width: 72vw; max-width: 300px; height: auto; aspect-ratio: 3/4; }
-  .featured-nav { display: flex; }
+  .featured-nav { display: flex; opacity: 1; pointer-events: auto; }
 
-  /* Modal: navbar altında, görsel tam genişlik */
+  /* Modal: tek akış kaydırma, fotoğraf doğal senkron */
   body.modal-open #product-modal {
     top: var(--nav-h);
     bottom: 0;
@@ -1230,40 +1227,32 @@ footer {
   }
   #product-modal.open .modal-box { transform: none; }
   .modal-image {
-    position: sticky;
-    top: 0;
-    z-index: 2;
+    position: relative;
     width: 100%;
-    height: min(52svh, 420px);
-    min-height: 240px;
+    height: min(46svh, 400px);
+    min-height: 220px;
     background: #000;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    will-change: height;
   }
   .modal-image img {
     width: 100%;
     height: 100%;
     object-fit: contain;
     object-position: center;
-    transform: scale(var(--modal-img-scale, 1));
-    opacity: var(--modal-img-opacity, 1);
-    transform-origin: center center;
-    will-change: transform, opacity;
   }
-  .modal-image:hover img { transform: scale(var(--modal-img-scale, 1)); }
+  .modal-image:hover img { transform: none; }
   .modal-details {
-    position: relative;
-    z-index: 1;
-    overflow-y: visible;
-    padding: 20px 16px calc(24px + env(safe-area-inset-bottom));
+    padding: 20px 16px calc(28px + env(safe-area-inset-bottom));
     background: var(--surface);
   }
   .modal-close {
-    top: 12px;
+    position: fixed;
+    top: calc(var(--nav-h) + 12px);
     right: 12px;
+    z-index: 2600;
     width: 40px;
     height: 40px;
     background: rgba(0,0,0,0.65);
@@ -1357,7 +1346,7 @@ footer {
   .featured-nav { width: 38px; height: 38px; }
   .featured-nav-prev { left: 4px; }
   .featured-nav-next { right: 4px; }
-  .modal-image { height: min(48svh, 380px); }
+  .modal-image { height: min(44svh, 360px); }
   .filter-section { padding-right: 12px; margin-right: 12px; }
   .filter-pill { padding: 5px 10px; font-size: 0.72rem; }
   .card-badges { top: 10px; left: 10px; }
