@@ -1,23 +1,79 @@
 'use strict';
 
-const LASWELL_DB_KEY   = 'laswell_products';
-const LASWELL_AUTH_KEY = 'laswell_admin_auth';
-const ADMIN_PASSWORD   = 'laswell2024';
+const LASWELL_DB_KEY    = 'laswell_products';
+const LASWELL_AUTH_KEY  = 'laswell_admin_auth';
+const LASWELL_OTP_KEY   = 'laswell_admin_otp';
+const ADMIN_PASSWORD    = 'laswell2024';
 
 const LaswellDB = {
 
   /* ── Auth ─────────────────────────────────────── */
   isAuthenticated: () => sessionStorage.getItem(LASWELL_AUTH_KEY) === 'true',
 
-  login(password) {
-    if (password === ADMIN_PASSWORD) {
-      sessionStorage.setItem(LASWELL_AUTH_KEY, 'true');
-      return true;
-    }
-    return false;
+  checkPassword(password) {
+    return password === ADMIN_PASSWORD;
   },
 
-  logout: () => sessionStorage.removeItem(LASWELL_AUTH_KEY),
+  _hashOtp(code) {
+    let h = 0;
+    for (let i = 0; i < code.length; i++) {
+      h = ((h << 5) - h) + code.charCodeAt(i) | 0;
+    }
+    return String(h);
+  },
+
+  generateOTP() {
+    return String(Math.floor(100000 + Math.random() * 900000));
+  },
+
+  storeOTP(code) {
+    const minutes = (typeof LASWELL_CONFIG !== 'undefined' && LASWELL_CONFIG.otpExpiryMinutes) || 10;
+    sessionStorage.setItem(LASWELL_OTP_KEY, JSON.stringify({
+      hash:    this._hashOtp(code),
+      expiry:  Date.now() + minutes * 60 * 1000,
+      attempts: 0,
+    }));
+  },
+
+  verifyOTP(input) {
+    const raw = sessionStorage.getItem(LASWELL_OTP_KEY);
+    if (!raw) return { ok: false, reason: 'expired' };
+
+    const data = JSON.parse(raw);
+    if (Date.now() > data.expiry) {
+      sessionStorage.removeItem(LASWELL_OTP_KEY);
+      return { ok: false, reason: 'expired' };
+    }
+
+    const maxAttempts = (typeof LASWELL_CONFIG !== 'undefined' && LASWELL_CONFIG.maxOtpAttempts) || 5;
+    if (data.attempts >= maxAttempts) {
+      sessionStorage.removeItem(LASWELL_OTP_KEY);
+      return { ok: false, reason: 'locked' };
+    }
+
+    if (this._hashOtp(input.trim()) !== data.hash) {
+      data.attempts += 1;
+      sessionStorage.setItem(LASWELL_OTP_KEY, JSON.stringify(data));
+      return { ok: false, reason: 'invalid', remaining: maxAttempts - data.attempts };
+    }
+
+    sessionStorage.removeItem(LASWELL_OTP_KEY);
+    sessionStorage.setItem(LASWELL_AUTH_KEY, 'true');
+    return { ok: true };
+  },
+
+  clearOTP() {
+    sessionStorage.removeItem(LASWELL_OTP_KEY);
+  },
+
+  completeLogin() {
+    sessionStorage.setItem(LASWELL_AUTH_KEY, 'true');
+  },
+
+  logout() {
+    sessionStorage.removeItem(LASWELL_AUTH_KEY);
+    sessionStorage.removeItem(LASWELL_OTP_KEY);
+  },
 
   /* ── Helpers ───────────────────────────────────── */
   _save(products) {

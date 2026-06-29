@@ -163,6 +163,70 @@ input, select, textarea { font-family: inherit; }
 }
 .btn-login:hover { background: var(--accent-light); transform: translateY(-1px); }
 .btn-login:active { transform: translateY(0); }
+.btn-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.btn-login-outline {
+  width: 100%;
+  padding: 11px;
+  background: transparent;
+  color: var(--text-2);
+  font-family: var(--font-h);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: color var(--t), border-color var(--t), background var(--t);
+}
+.btn-login-outline:hover { color: var(--text-1); border-color: var(--border-light); background: var(--surface-2); }
+.btn-resend {
+  width: 100%;
+  padding: 8px;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: color var(--t);
+}
+.btn-resend:hover { color: var(--accent-light); }
+.btn-resend:disabled { opacity: 0.5; cursor: not-allowed; }
+.otp-info {
+  font-size: 0.82rem;
+  color: var(--text-2);
+  text-align: center;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+#admin-otp {
+  text-align: center;
+  font-size: 1.4rem;
+  letter-spacing: 0.35em;
+  font-weight: 700;
+  font-family: var(--font-h);
+}
+
+/* Sidebar overlay (mobile) */
+#sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 99;
+  backdrop-filter: blur(4px);
+}
+#sidebar-overlay.visible { display: block; }
+body.sidebar-open { overflow: hidden; }
+
+/* Table horizontal scroll */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-scroll .product-table { min-width: 640px; }
 
 /* ── Admin Layout ──────────────────────────────────────────────── */
 #admin-panel {
@@ -715,14 +779,39 @@ input, select, textarea { font-family: inherit; }
 
 /* ── Responsive ──────────────────────────────────────────────────── */
 @media (max-width: 900px) {
-  #admin-sidebar { transform: translateX(-100%); }
+  #admin-sidebar { transform: translateX(-100%); box-shadow: 8px 0 32px rgba(0,0,0,0.5); }
   #admin-sidebar.mobile-open { transform: translateX(0); }
   #admin-main { margin-left: 0; }
+  #admin-topbar { padding: 0 16px; }
+  .topbar-title { font-size: 0.82rem; }
+  .topbar-actions .btn span,
+  .topbar-actions .btn svg + span { display: none; }
   .form-grid { grid-template-columns: 1fr; }
   .data-section { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .admin-search-row { flex-direction: column; align-items: stretch; }
+  .admin-search { min-width: 0; width: 100%; }
+  .filter-select { width: 100%; }
+  #admin-add-product-btn { width: 100%; justify-content: center; }
+  .panel-card-header { flex-wrap: wrap; gap: 10px; }
+  .form-actions { flex-direction: column; }
+  .form-actions .btn { width: 100%; justify-content: center; }
+  .toggle-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+  #product-form-panel .form-grid > .form-full > div[style*="grid-template-columns"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
 }
 @media (max-width: 480px) {
+  .login-box { padding: 32px 20px; margin: 16px; margin-bottom: max(16px, env(safe-area-inset-bottom)); }
+  .login-logo { font-size: 1.4rem; letter-spacing: 0.18em; }
   .admin-content { padding: 16px; }
-  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .stat-value { font-size: 1.6rem; }
+  #admin-toast-container { left: 16px; right: 16px; top: auto; bottom: 16px; }
+  .admin-toast { min-width: 0; width: 100%; }
+  .confirm-box { margin: 16px; }
+  .tbl-btn { padding: 6px 8px; font-size: 0.7rem; }
+  .table-actions { flex-wrap: wrap; }
 }

@@ -16,6 +16,7 @@
       <div class="login-logo">LAS<span>W</span>ELL</div>
       <div class="login-subtitle">Admin Paneli</div>
       <div class="login-divider"></div>
+      <!-- Adım 1: Şifre -->
       <form class="login-form" id="login-form" autocomplete="off">
         <div class="form-group">
           <label for="admin-password">Şifre</label>
@@ -28,7 +29,31 @@
           />
         </div>
         <div class="login-error" id="login-error">Hatalı şifre. Tekrar deneyin.</div>
-        <button type="submit" class="btn-login">Giriş Yap</button>
+        <button type="submit" class="btn-login" id="login-submit-btn">Devam Et</button>
+      </form>
+
+      <!-- Adım 2: E-posta Onay Kodu -->
+      <form class="login-form" id="otp-form" autocomplete="off" style="display:none;">
+        <p class="otp-info" id="otp-info">
+          E-posta adresinize 6 haneli onay kodu gönderildi.
+        </p>
+        <div class="form-group">
+          <label for="admin-otp">Onay Kodu</label>
+          <input
+            type="text"
+            id="admin-otp"
+            placeholder="000000"
+            inputmode="numeric"
+            pattern="[0-9]{6}"
+            maxlength="6"
+            required
+            autocomplete="one-time-code"
+          />
+        </div>
+        <div class="login-error" id="otp-error">Geçersiz onay kodu.</div>
+        <button type="submit" class="btn-login" id="otp-submit-btn">Doğrula ve Giriş Yap</button>
+        <button type="button" class="btn-login-outline" id="otp-back-btn">← Şifreye Dön</button>
+        <button type="button" class="btn-resend" id="otp-resend-btn">Kodu Tekrar Gönder</button>
       </form>
       <p style="text-align:center;margin-top:20px;font-size:0.75rem;color:var(--text-3);">
         <a href="index.html" style="color:var(--accent);">← Mağazaya Dön</a>
@@ -38,6 +63,8 @@
 
   <!-- ── Admin Panel ────────────────────────────────── -->
   <div id="admin-panel">
+
+    <div id="sidebar-overlay" aria-hidden="true"></div>
 
     <!-- Sidebar -->
     <aside id="admin-sidebar">
@@ -169,18 +196,20 @@
               <button class="btn btn-outline btn-sm" data-panel="products">Tümünü Gör</button>
             </div>
             <div class="panel-card-body">
-              <table class="product-table">
-                <thead>
-                  <tr>
-                    <th>Ürün</th>
-                    <th>Kategori</th>
-                    <th>Fiyat</th>
-                    <th>Durum</th>
-                    <th>İşlem</th>
-                  </tr>
-                </thead>
-                <tbody id="dashboard-recent-tbody"></tbody>
-              </table>
+              <div class="table-scroll">
+                <table class="product-table">
+                  <thead>
+                    <tr>
+                      <th>Ürün</th>
+                      <th>Kategori</th>
+                      <th>Fiyat</th>
+                      <th>Durum</th>
+                      <th>İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboard-recent-tbody"></tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -221,21 +250,23 @@
               <span style="font-size:0.78rem;color:var(--text-3)" id="product-list-count"></span>
             </div>
             <div class="panel-card-body">
-              <table class="product-table" id="products-table">
-                <thead>
-                  <tr>
-                    <th style="width:56px;">Görsel</th>
-                    <th>Ürün</th>
-                    <th>Kategori</th>
-                    <th>Fiyat</th>
-                    <th>Bedenler</th>
-                    <th>Durum</th>
-                    <th>Tarih</th>
-                    <th style="width:140px;">İşlem</th>
-                  </tr>
-                </thead>
-                <tbody id="products-tbody"></tbody>
-              </table>
+              <div class="table-scroll">
+                <table class="product-table" id="products-table">
+                  <thead>
+                    <tr>
+                      <th style="width:56px;">Görsel</th>
+                      <th>Ürün</th>
+                      <th>Kategori</th>
+                      <th>Fiyat</th>
+                      <th>Bedenler</th>
+                      <th>Durum</th>
+                      <th>Tarih</th>
+                      <th style="width:140px;">İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody id="products-tbody"></tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -434,6 +465,8 @@
   <!-- ── Admin Toast ───────────────────────────────── -->
   <div id="admin-toast-container"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="js/config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/admin.js"></script>
 </body>
