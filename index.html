@@ -81,10 +81,22 @@
       <h2>Öne Çıkanlar</h2>
       <div class="section-title-line"></div>
     </div>
-    <div class="featured-track-wrapper">
-      <div class="featured-track" id="featured-track">
-        <!-- populated by JS -->
+    <div class="featured-carousel">
+      <button type="button" class="featured-nav featured-nav-prev" id="featured-prev" aria-label="Önceki ürünler">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+      <div class="featured-scroll" id="featured-scroll">
+        <div class="featured-track" id="featured-track">
+          <!-- populated by JS -->
+        </div>
       </div>
+      <button type="button" class="featured-nav featured-nav-next" id="featured-next" aria-label="Sonraki ürünler">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
     </div>
   </section>
 

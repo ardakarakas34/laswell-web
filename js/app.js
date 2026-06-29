@@ -29,6 +29,7 @@ const sortSelect     = $('#sort-select');
 const productsGrid   = $('#products-grid');
 const resultsCount   = $('#results-count');
 const featuredTrack  = $('#featured-track');
+const featuredScroll = $('#featured-scroll');
 const heroTitle      = $('#hero-title');
 const productModal   = $('#product-modal');
 const toastContainer = $('#toast-container');
@@ -41,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   animateHeroLetters();
   applyFilters();
   renderFeatured();
+  bindFeaturedCarousel();
   bindEvents();
   initScrollObserver();
   initNavbarScroll();
@@ -222,18 +224,24 @@ function createProductCard(product, idx) {
 }
 
 // ── Featured Strip ────────────────────────────────────────────
+function isMobileView() {
+  return window.matchMedia('(max-width: 768px)').matches;
+}
+
 function renderFeatured() {
   const featured = state.products.filter(p => p.featured);
   if (featured.length === 0) { $('#featured-section').style.display = 'none'; return; }
 
-  // Duplicate for infinite scroll
-  const items = [...featured, ...featured];
+  const manual = isMobileView();
+  const items  = manual ? featured : [...featured, ...featured];
+
+  featuredTrack.classList.toggle('auto-scroll', !manual);
   featuredTrack.innerHTML = items.map(p => {
     const price = effectivePrice(p);
     return `
       <div class="featured-card" data-id="${p.id}">
         <div class="card-img">
-          <img src="${p.image || ''}" alt="${p.name}" loading="lazy" />
+          <img src="${p.image || ''}" alt="${p.name}" loading="lazy" draggable="false" />
         </div>
         <div class="featured-card-overlay"></div>
         <div class="featured-card-info">
@@ -245,6 +253,31 @@ function renderFeatured() {
 
   featuredTrack.querySelectorAll('.featured-card').forEach(card => {
     card.addEventListener('click', () => openModal(card.dataset.id));
+  });
+
+  if (featuredScroll) featuredScroll.scrollLeft = 0;
+}
+
+function bindFeaturedCarousel() {
+  const prev = $('#featured-prev');
+  const next = $('#featured-next');
+  if (!featuredScroll || !prev || !next) return;
+
+  const scrollByCard = (dir) => {
+    const card = featuredTrack.querySelector('.featured-card');
+    if (!card) return;
+    const gap   = parseFloat(getComputedStyle(featuredTrack).gap) || 12;
+    const step  = card.offsetWidth + gap;
+    featuredScroll.scrollBy({ left: dir * step, behavior: 'smooth' });
+  };
+
+  prev.addEventListener('click', () => scrollByCard(-1));
+  next.addEventListener('click', () => scrollByCard(1));
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(renderFeatured, 200);
   });
 }
 
@@ -301,11 +334,13 @@ function openModal(productId) {
   });
 
   productModal.classList.add('open');
+  document.body.classList.add('modal-open');
   document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
   productModal.classList.remove('open');
+  document.body.classList.remove('modal-open');
   document.body.style.overflow = '';
   state.currentProduct = null;
 }
