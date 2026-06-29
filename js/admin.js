@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     $('#login-screen').style.display = 'flex';
     $('#admin-panel').style.display  = 'none';
+    if (LaswellDB.isLocked()) {
+      showLoginMessage(`Çok fazla hatalı deneme. ${LaswellDB.lockRemainingMin()} dk sonra tekrar deneyin.`);
+    }
   }
 
   bindLoginEvents();
@@ -36,18 +39,43 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── Auth ──────────────────────────────────────────────────────
+const SESSION_IDLE_MS = 30 * 60 * 1000; // 30 dk hareketsizlikte otomatik çıkış
+let sessionGuardActive = false;
+
+function showLoginMessage(text) {
+  const err = $('#login-error');
+  err.textContent = text;
+  err.classList.add('show');
+  setTimeout(() => err.classList.remove('show'), 4000);
+}
+
 function bindLoginEvents() {
   $('#login-form').addEventListener('submit', (e) => {
     e.preventDefault();
-    const pw = $('#admin-password').value;
-    if (LaswellDB.login(pw)) {
-      showPanel();
-    } else {
-      const err = $('#login-error');
-      err.classList.add('show');
-      setTimeout(() => err.classList.remove('show'), 3000);
-      $('#admin-password').value = '';
+
+    if (LaswellDB.isLocked()) {
+      showLoginMessage(`Çok fazla hatalı deneme. ${LaswellDB.lockRemainingMin()} dk sonra tekrar deneyin.`);
+      return;
     }
+
+    const pw     = $('#admin-password').value;
+    const result = LaswellDB.login(pw);
+
+    if (result.ok) {
+      showPanel();
+      return;
+    }
+
+    if (result.locked) {
+      showLoginMessage(`Çok fazla hatalı deneme. ${result.remainingMin} dk boyunca giriş kilitlendi.`);
+    } else if (typeof result.attemptsLeft === 'number') {
+      showLoginMessage(result.attemptsLeft > 0
+        ? `Hatalı şifre. ${result.attemptsLeft} deneme hakkınız kaldı.`
+        : 'Hatalı şifre.');
+    } else {
+      showLoginMessage('Hatalı şifre. Tekrar deneyin.');
+    }
+    $('#admin-password').value = '';
   });
 
   $('#logout-btn').addEventListener('click', () => {
@@ -56,10 +84,35 @@ function bindLoginEvents() {
   });
 }
 
+// Oturum zaman aşımı: hareketsizlikte otomatik çıkış + aktifken oturumu uzat
+function setupSessionGuard() {
+  if (sessionGuardActive) return;
+  sessionGuardActive = true;
+
+  let lastActivity = Date.now();
+  const bump = () => { lastActivity = Date.now(); };
+  ['click', 'keydown', 'mousemove', 'touchstart', 'scroll'].forEach(ev =>
+    document.addEventListener(ev, bump, { passive: true }));
+
+  setInterval(() => {
+    if (!LaswellDB.isAuthenticated()) return;
+    const idle = Date.now() - lastActivity;
+    if (idle >= SESSION_IDLE_MS) {
+      LaswellDB.logout();
+      showAdminToast('Oturum zaman aşımına uğradı. Güvenlik için çıkış yapıldı.', 'error');
+      setTimeout(() => location.reload(), 1800);
+    } else {
+      LaswellDB.refreshSession();
+    }
+  }, 60000);
+}
+
 function showPanel() {
   $('#login-screen').style.display  = 'none';
   $('#admin-panel').classList.add('visible');
   $('#admin-panel').style.display   = 'flex';
+  LaswellDB.refreshSession();
+  setupSessionGuard();
   LaswellDB.seed();
   loadDashboard();
   loadProductList();

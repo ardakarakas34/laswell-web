@@ -2,19 +2,96 @@
 
 const LASWELL_DB_KEY   = 'laswell_products';
 const LASWELL_AUTH_KEY = 'laswell_admin_auth';
-const ADMIN_PASSWORD   = 'laswell2024';
+const LASWELL_LOCK_KEY = 'laswell_admin_lock';
+
+/* Şifre kaynak kodda açık görünmesin diye Base64 ile gizlendi.
+   Şifreyi değiştirmek için yeni şifrenin Base64 karşılığını buraya yaz.
+   (Gerçek güvenlik için ayrıca Vercel env variable + middleware önerilir.) */
+const ADMIN_PASSWORD_ENC = 'bGFzd2VsbDIwMjQ='; // base64("laswell2024")
+
+const LASWELL_SESSION_TTL = 30 * 60 * 1000; // 30 dk oturum süresi
+const LASWELL_MAX_ATTEMPTS = 5;             // izin verilen yanlış deneme
+const LASWELL_LOCK_MS = 5 * 60 * 1000;      // kilit süresi (5 dk)
 
 const LaswellDB = {
 
   /* ── Auth ─────────────────────────────────────── */
-  isAuthenticated: () => sessionStorage.getItem(LASWELL_AUTH_KEY) === 'true',
+  isAuthenticated() {
+    const raw = sessionStorage.getItem(LASWELL_AUTH_KEY);
+    if (!raw) return false;
+    try {
+      const data = JSON.parse(raw);
+      if (!data.ok) return false;
+      if (Date.now() > data.exp) {
+        sessionStorage.removeItem(LASWELL_AUTH_KEY);
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  _getLock() {
+    try { return JSON.parse(localStorage.getItem(LASWELL_LOCK_KEY)) || {}; }
+    catch { return {}; }
+  },
+  isLocked() {
+    const l = this._getLock();
+    return !!(l.until && Date.now() < l.until);
+  },
+  lockRemainingMin() {
+    const l = this._getLock();
+    return Math.max(1, Math.ceil(((l.until || 0) - Date.now()) / 60000));
+  },
+  _recordFail() {
+    const l = this._getLock();
+    l.fails = (l.fails || 0) + 1;
+    if (l.fails >= LASWELL_MAX_ATTEMPTS) {
+      l.until = Date.now() + LASWELL_LOCK_MS;
+      l.fails = 0;
+    }
+    localStorage.setItem(LASWELL_LOCK_KEY, JSON.stringify(l));
+    return l;
+  },
+  _clearLock() {
+    localStorage.removeItem(LASWELL_LOCK_KEY);
+  },
 
   login(password) {
-    if (password === ADMIN_PASSWORD) {
-      sessionStorage.setItem(LASWELL_AUTH_KEY, 'true');
-      return true;
+    if (this.isLocked()) {
+      return { ok: false, locked: true, remainingMin: this.lockRemainingMin() };
     }
-    return false;
+
+    let expected = '';
+    try { expected = atob(ADMIN_PASSWORD_ENC); } catch { expected = ''; }
+
+    if (expected && password === expected) {
+      this._clearLock();
+      sessionStorage.setItem(LASWELL_AUTH_KEY, JSON.stringify({
+        ok:  true,
+        exp: Date.now() + LASWELL_SESSION_TTL,
+      }));
+      return { ok: true };
+    }
+
+    const l = this._recordFail();
+    if (l.until && Date.now() < l.until) {
+      return { ok: false, locked: true, remainingMin: this.lockRemainingMin() };
+    }
+    return { ok: false, attemptsLeft: Math.max(0, LASWELL_MAX_ATTEMPTS - (l.fails || 0)) };
+  },
+
+  refreshSession() {
+    const raw = sessionStorage.getItem(LASWELL_AUTH_KEY);
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw);
+      if (data.ok) {
+        data.exp = Date.now() + LASWELL_SESSION_TTL;
+        sessionStorage.setItem(LASWELL_AUTH_KEY, JSON.stringify(data));
+      }
+    } catch { /* yoksay */ }
   },
 
   logout: () => sessionStorage.removeItem(LASWELL_AUTH_KEY),
