@@ -29,7 +29,6 @@ const sortSelect     = $('#sort-select');
 const productsGrid   = $('#products-grid');
 const resultsCount   = $('#results-count');
 const featuredTrack  = $('#featured-track');
-const featuredScroll = $('#featured-scroll');
 const heroTitle      = $('#hero-title');
 const productModal   = $('#product-modal');
 const modalScrollBox = $('#modal-scroll-box');
@@ -43,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
   animateHeroLetters();
   applyFilters();
   renderFeatured();
-  bindFeaturedCarousel();
   bindEvents();
   initScrollObserver();
   initNavbarScroll();
@@ -225,28 +223,21 @@ function createProductCard(product, idx) {
 }
 
 // ── Featured Strip ────────────────────────────────────────────
-const featuredAuto = { rafId: null, pauseUntil: 0, lastAutoAt: 0, speed: 1 };
-
 function renderFeatured() {
   const featured = state.products.filter(p => p.featured);
   if (featured.length === 0) {
     $('#featured-section').style.display = 'none';
-    stopFeaturedAuto();
     return;
   }
   $('#featured-section').style.display = '';
 
-  // Sonsuz döngü için en az 2 set (tek ürün olsa bile tekrarla)
-  const items = featured.length > 1
-    ? [...featured, ...featured]
-    : [...featured, ...featured, ...featured, ...featured];
-
+  const items = [...featured, ...featured];
   featuredTrack.innerHTML = items.map(p => {
     const price = effectivePrice(p);
     return `
       <div class="featured-card" data-id="${p.id}">
         <div class="card-img">
-          <img src="${p.image || ''}" alt="${p.name}" loading="lazy" draggable="false" />
+          <img src="${p.image || ''}" alt="${p.name}" loading="lazy" />
         </div>
         <div class="featured-card-overlay"></div>
         <div class="featured-card-info">
@@ -259,76 +250,6 @@ function renderFeatured() {
   featuredTrack.querySelectorAll('.featured-card').forEach(card => {
     card.addEventListener('click', () => openModal(card.dataset.id));
   });
-
-  if (featuredScroll) featuredScroll.scrollLeft = 0;
-  featuredAuto.pauseUntil = 0;
-
-  // Görseller yüklendikten sonra genişlik doğru hesaplansın
-  featuredTrack.querySelectorAll('img').forEach(img => {
-    if (!img.complete) {
-      img.addEventListener('load', () => startFeaturedAuto(), { once: true });
-    }
-  });
-  startFeaturedAuto();
-}
-
-function featuredAutoTick() {
-  featuredAuto.rafId = requestAnimationFrame(featuredAutoTick);
-  if (!featuredScroll || Date.now() < featuredAuto.pauseUntil) return;
-
-  const half = featuredScroll.scrollWidth / 2;
-  if (half <= featuredScroll.clientWidth + 4) return;
-
-  featuredAuto.lastAutoAt = Date.now();
-  let next = featuredScroll.scrollLeft + featuredAuto.speed;
-  if (next >= half) next -= half;
-  featuredScroll.scrollLeft = next;
-}
-
-function pauseFeaturedAuto(ms = 5000) {
-  featuredAuto.pauseUntil = Date.now() + ms;
-}
-
-function startFeaturedAuto() {
-  stopFeaturedAuto();
-  featuredAuto.rafId = requestAnimationFrame(featuredAutoTick);
-}
-
-function stopFeaturedAuto() {
-  if (featuredAuto.rafId) cancelAnimationFrame(featuredAuto.rafId);
-  featuredAuto.rafId = null;
-}
-
-function bindFeaturedCarousel() {
-  const prev = $('#featured-prev');
-  const next = $('#featured-next');
-  if (!featuredScroll || !prev || !next) return;
-
-  const scrollByCard = (dir) => {
-    const card = featuredTrack.querySelector('.featured-card');
-    if (!card) return;
-    const gap  = parseFloat(getComputedStyle(featuredTrack).gap) || 12;
-    featuredScroll.scrollBy({ left: dir * (card.offsetWidth + gap), behavior: 'smooth' });
-  };
-
-  prev.addEventListener('click', () => { pauseFeaturedAuto(); scrollByCard(-1); });
-  next.addEventListener('click', () => { pauseFeaturedAuto(); scrollByCard(1); });
-
-  featuredScroll.addEventListener('touchstart', () => pauseFeaturedAuto(6000), { passive: true });
-  featuredScroll.addEventListener('wheel', () => pauseFeaturedAuto(4000), { passive: true });
-  featuredScroll.addEventListener('scroll', () => {
-    // Programatik kaydırmayı duraklatma olarak algılama
-    if (Date.now() - featuredAuto.lastAutoAt < 120) return;
-    pauseFeaturedAuto(5000);
-  }, { passive: true });
-
-  let resizeTimer;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(renderFeatured, 200);
-  });
-
-  startFeaturedAuto();
 }
 
 function resetModalScroll() {
