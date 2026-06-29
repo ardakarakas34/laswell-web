@@ -1015,8 +1015,15 @@ footer {
 
 @media (max-width: 1024px) {
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
-  .modal-box { grid-template-columns: 1fr; max-height: 85vh; }
-  .modal-image { height: 300px; }
+  .modal-box {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    max-height: 85vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-image { height: 300px; flex-shrink: 0; }
+  .modal-details { overflow-y: visible; }
 }
 @media (max-width: 768px) {
   #navbar {
