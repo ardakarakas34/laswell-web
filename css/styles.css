@@ -1221,15 +1221,19 @@ footer {
     border-radius: 0;
     border: none;
     border-top: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    display: block;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     transform: none;
   }
   #product-modal.open .modal-box { transform: none; }
   .modal-image {
+    position: sticky;
+    top: 0;
+    z-index: 2;
     width: 100%;
-    flex: 0 0 auto;
     height: min(52svh, 420px);
     min-height: 240px;
     background: #000;
@@ -1237,21 +1241,25 @@ footer {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    will-change: height;
   }
   .modal-image img {
     width: 100%;
     height: 100%;
     object-fit: contain;
     object-position: center;
+    transform: scale(var(--modal-img-scale, 1));
+    opacity: var(--modal-img-opacity, 1);
+    transform-origin: center center;
+    will-change: transform, opacity;
   }
-  .modal-image:hover img { transform: none; }
+  .modal-image:hover img { transform: scale(var(--modal-img-scale, 1)); }
   .modal-details {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    position: relative;
+    z-index: 1;
+    overflow-y: visible;
     padding: 20px 16px calc(24px + env(safe-area-inset-bottom));
+    background: var(--surface);
   }
   .modal-close {
     top: 12px;

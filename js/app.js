@@ -32,6 +32,8 @@ const featuredTrack  = $('#featured-track');
 const featuredScroll = $('#featured-scroll');
 const heroTitle      = $('#hero-title');
 const productModal   = $('#product-modal');
+const modalScrollBox = $('#modal-scroll-box');
+const modalImageWrap = () => $('.modal-image');
 const toastContainer = $('#toast-container');
 
 // ── Init ──────────────────────────────────────────────────────
@@ -43,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
   applyFilters();
   renderFeatured();
   bindFeaturedCarousel();
+  bindModalScrollSync();
   bindEvents();
   initScrollObserver();
   initNavbarScroll();
@@ -281,6 +284,45 @@ function bindFeaturedCarousel() {
   });
 }
 
+// ── Modal scroll sync (mobil) ─────────────────────────────────
+const MODAL_IMG_MIN_H = 72;
+
+function getModalImgStartH() {
+  return Math.min(window.innerHeight * 0.52, 420);
+}
+
+function syncModalImageScroll() {
+  if (!isMobileView() || !productModal.classList.contains('open')) return;
+  const box     = modalScrollBox;
+  const imgWrap = modalImageWrap();
+  if (!box || !imgWrap) return;
+
+  const startH   = getModalImgStartH();
+  const collapse = Math.max(160, startH - MODAL_IMG_MIN_H);
+  const progress = Math.min(1, box.scrollTop / collapse);
+  const height   = startH - (startH - MODAL_IMG_MIN_H) * progress;
+
+  imgWrap.style.height = `${height}px`;
+  imgWrap.style.setProperty('--modal-img-scale', (1 - progress * 0.1).toFixed(3));
+  imgWrap.style.setProperty('--modal-img-opacity', (1 - progress * 0.2).toFixed(3));
+}
+
+function resetModalScroll() {
+  const box     = modalScrollBox;
+  const imgWrap = modalImageWrap();
+  if (box) box.scrollTop = 0;
+  if (imgWrap) {
+    imgWrap.style.height = '';
+    imgWrap.style.removeProperty('--modal-img-scale');
+    imgWrap.style.removeProperty('--modal-img-opacity');
+  }
+}
+
+function bindModalScrollSync() {
+  if (!modalScrollBox) return;
+  modalScrollBox.addEventListener('scroll', syncModalImageScroll, { passive: true });
+}
+
 // ── Product Modal ─────────────────────────────────────────────
 function openModal(productId) {
   const product = LaswellDB.getById(productId) || state.products.find(p => p.id === productId);
@@ -333,15 +375,24 @@ function openModal(productId) {
     });
   });
 
+  resetModalScroll();
   productModal.classList.add('open');
   document.body.classList.add('modal-open');
   document.body.style.overflow = 'hidden';
+
+  if (isMobileView()) {
+    requestAnimationFrame(() => {
+      const imgWrap = modalImageWrap();
+      if (imgWrap) imgWrap.style.height = `${getModalImgStartH()}px`;
+    });
+  }
 }
 
 function closeModal() {
   productModal.classList.remove('open');
   document.body.classList.remove('modal-open');
   document.body.style.overflow = '';
+  resetModalScroll();
   state.currentProduct = null;
 }
 
