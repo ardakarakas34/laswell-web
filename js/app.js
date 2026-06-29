@@ -225,7 +225,7 @@ function createProductCard(product, idx) {
 }
 
 // ── Featured Strip ────────────────────────────────────────────
-const featuredAuto = { rafId: null, pauseUntil: 0, autoScrolling: false, speed: 0.55 };
+const featuredAuto = { rafId: null, pauseUntil: 0, lastAutoAt: 0, speed: 1 };
 
 function renderFeatured() {
   const featured = state.products.filter(p => p.featured);
@@ -236,7 +236,10 @@ function renderFeatured() {
   }
   $('#featured-section').style.display = '';
 
-  const items = featured.length > 1 ? [...featured, ...featured] : featured;
+  // Sonsuz döngü için en az 2 set (tek ürün olsa bile tekrarla)
+  const items = featured.length > 1
+    ? [...featured, ...featured]
+    : [...featured, ...featured, ...featured, ...featured];
 
   featuredTrack.innerHTML = items.map(p => {
     const price = effectivePrice(p);
@@ -258,6 +261,14 @@ function renderFeatured() {
   });
 
   if (featuredScroll) featuredScroll.scrollLeft = 0;
+  featuredAuto.pauseUntil = 0;
+
+  // Görseller yüklendikten sonra genişlik doğru hesaplansın
+  featuredTrack.querySelectorAll('img').forEach(img => {
+    if (!img.complete) {
+      img.addEventListener('load', () => startFeaturedAuto(), { once: true });
+    }
+  });
   startFeaturedAuto();
 }
 
@@ -268,11 +279,10 @@ function featuredAutoTick() {
   const half = featuredScroll.scrollWidth / 2;
   if (half <= featuredScroll.clientWidth + 4) return;
 
-  featuredAuto.autoScrolling = true;
+  featuredAuto.lastAutoAt = Date.now();
   let next = featuredScroll.scrollLeft + featuredAuto.speed;
   if (next >= half) next -= half;
   featuredScroll.scrollLeft = next;
-  featuredAuto.autoScrolling = false;
 }
 
 function pauseFeaturedAuto(ms = 5000) {
@@ -305,9 +315,11 @@ function bindFeaturedCarousel() {
   next.addEventListener('click', () => { pauseFeaturedAuto(); scrollByCard(1); });
 
   featuredScroll.addEventListener('touchstart', () => pauseFeaturedAuto(6000), { passive: true });
-  featuredScroll.addEventListener('pointerdown', () => pauseFeaturedAuto(6000), { passive: true });
+  featuredScroll.addEventListener('wheel', () => pauseFeaturedAuto(4000), { passive: true });
   featuredScroll.addEventListener('scroll', () => {
-    if (!featuredAuto.autoScrolling) pauseFeaturedAuto(5000);
+    // Programatik kaydırmayı duraklatma olarak algılama
+    if (Date.now() - featuredAuto.lastAutoAt < 120) return;
+    pauseFeaturedAuto(5000);
   }, { passive: true });
 
   let resizeTimer;
