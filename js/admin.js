@@ -59,6 +59,7 @@ function bindLoginEvents() {
 function showPanel() {
   $('#login-screen').style.display  = 'none';
   $('#admin-panel').classList.add('visible');
+  $('#admin-panel').style.display   = 'flex';
   LaswellDB.seed();
   loadDashboard();
   loadProductList();
